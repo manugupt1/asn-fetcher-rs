@@ -1,0 +1,11 @@
+[package]
+name = "asn-parser"
+version = "0.1.0"
+edition = "2024"
+authors = ["Your Name <your.email@example.com>"]
+description = "A CLI tool to get ASN (Autonomous System Number) from IP addresses"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/manugupt1/asn-parser-rs"
+
+[dependencies]
