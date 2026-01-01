@@ -179,20 +179,18 @@ asn-parser-rs/
 
 ### Recommended Crates for This Project
 
-- `clap` - Command-line argument parsing
-- `reqwest` - HTTP client for making API requests
-- `serde` and `serde_json` - Serialization/deserialization
-- `tokio` - Asynchronous runtime
-- `ipnetwork` - IP address and network manipulation
+- [`clap`](https://docs.rs/clap/) - Command-line argument parsing
+- [`reqwest`](https://docs.rs/reqwest/) - HTTP client for making API requests
+- [`serde`](https://docs.rs/serde/) and [`serde_json`](https://docs.rs/serde_json/) - Serialization/deserialization
+- [`tokio`](https://docs.rs/tokio/) - Asynchronous runtime
+- [`ipnetwork`](https://docs.rs/ipnetwork/) - IP address and network manipulation
 
 ## Roadmap
 
 - [x] Create starter CLI template
 - [ ] Add command-line argument parsing (IP address input)
-- [ ] Implement ASN lookup using public APIs (e.g., ipapi.co, team-cymru)
+- [ ] Implement ASN lookup using public APIs (e.g., ipapi.co, team-cymru) or local databases (e.g., MaxMind GeoIP2, IP2Location)
 - [ ] Add error handling and validation
-- [ ] Implement caching for repeated queries
-- [ ] Add support for bulk IP lookups
 - [ ] Create comprehensive tests
 - [ ] Add configuration file support
 - [ ] Publish to crates.io
