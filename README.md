@@ -189,7 +189,7 @@ asn-parser-rs/
 
 - [x] Create starter CLI template
 - [ ] Add command-line argument parsing (IP address input)
-- [ ] Implement ASN lookup using public APIs (e.g., ipapi.co, team-cymru) or local databases (e.g., MaxMind GeoIP2, IP2Location)
+- [ ] Implement ASN lookup using public APIs (e.g., [RIPE NCC](https://stat.ripe.net/data/prefix-overview/data.json?resource=8.8.8.8), ipapi.co, team-cymru) or local databases (e.g., MaxMind GeoIP2, IP2Location)
 - [ ] Add error handling and validation
 - [ ] Create comprehensive tests
 - [ ] Add configuration file support
