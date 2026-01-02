@@ -1,0 +1,47 @@
+name: Claude Issue Creator
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  create-issues:
+    # Trigger when an issue gets the 'claude-create-issues' label
+    if: contains(github.event.issue.labels.*.name, 'claude-create-issues')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude to Create Issues
+        id: claude-create-issues
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            ISSUE #${{ github.event.issue.number }}: ${{ github.event.issue.title }}
+
+            This issue has been labeled for issue creation. Please:
+
+            1. Read the issue description and any comments
+            2. Break down the work into logical, atomic issues
+            3. Create separate GitHub issues for each task using `gh issue create`
+            4. Link the created issues back to this parent issue
+            5. Comment on this issue with a summary of what you created
+
+            Guidelines:
+            - Each issue should be focused and independently actionable
+            - Use clear, descriptive titles
+            - Include relevant context and acceptance criteria
+            - Add appropriate labels if mentioned in the original issue
+
+            Use `gh issue create` to create the issues and `gh issue comment` to update this issue.
+
+          claude_args: '--allowed-tools "Bash(gh issue:*),Bash(gh search:*)"'
