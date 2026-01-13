@@ -3,9 +3,10 @@
 use clap::Parser;
 use std::net::IpAddr;
 
+/// Command-line arguments for ASN lookup
 #[derive(Parser, Debug)]
 pub struct Args {
-    // IP address to lookup ASN for
+    /// IP address to lookup ASN for (IPv4 or IPv6)
     #[arg(short, long, required = true)]
     pub ip: IpAddr,
 }

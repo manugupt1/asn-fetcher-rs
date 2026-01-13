@@ -8,7 +8,7 @@ This project is designed as a learning tool for both Rust programming and networ
 
 ## Current Status
 
-🚀 **Starter Template** - Currently prints a hello-world message. Full ASN lookup functionality coming soon!
+✅ **Fully Functional** - ASN lookup using RIPE NCC API is now implemented!
 
 ## Prerequisites
 
@@ -38,11 +38,14 @@ cargo build --release
 ### Running the CLI
 
 ```bash
-# Run in development mode
-cargo run
+# Run in development mode with an IP address
+cargo run -- --ip 8.8.8.8
 
 # Run the optimized binary
-./target/release/asn-parser
+./target/release/asn-parser --ip 8.8.8.8
+
+# IPv6 support
+cargo run -- --ip 2001:4860:4860::8888
 ```
 
 ## Development Best Practices
@@ -188,11 +191,12 @@ asn-parser-rs/
 ## Roadmap
 
 - [x] Create starter CLI template
-- [ ] Add command-line argument parsing (IP address input)
-- [ ] Implement ASN lookup using public APIs (e.g., [RIPE NCC](https://stat.ripe.net/data/prefix-overview/data.json?resource=8.8.8.8), ipapi.co, team-cymru) or local databases (e.g., MaxMind GeoIP2, IP2Location)
-- [ ] Add error handling and validation
-- [ ] Create comprehensive tests
+- [x] Add command-line argument parsing (IP address input)
+- [x] Implement ASN lookup using RIPE NCC API
+- [x] Add error handling and validation
+- [x] Create comprehensive tests
 - [ ] Add configuration file support
+- [ ] Support additional ASN data sources (ipapi.co, team-cymru, MaxMind GeoIP2)
 - [ ] Publish to crates.io
 
 ## Contributing

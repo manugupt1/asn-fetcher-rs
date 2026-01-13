@@ -6,44 +6,73 @@ use reqwest::blocking::ClientBuilder;
 use std::{io::Error, net::IpAddr, time::Duration};
 
 fn map_reqwest_error(err: reqwest::Error) -> Error {
-    Error::new(std::io::ErrorKind::Other, err.to_string())
+    if err.is_timeout() {
+        Error::new(std::io::ErrorKind::TimedOut, err.to_string())
+    } else if err.is_connect() {
+        Error::new(std::io::ErrorKind::ConnectionRefused, err.to_string())
+    } else {
+        Error::new(std::io::ErrorKind::Other, err.to_string())
+    }
 }
 
-pub struct Rite {
+/// RIPE NCC ASN lookup client
+///
+/// This client queries the RIPE NCC API to retrieve ASN information
+/// for a given IP address.
+pub struct Ripe {
     client: reqwest::blocking::Client,
     server_url: String,
 }
 
-impl Rite {
+impl Ripe {
     const DEFAULT_SERVER_URL: &'static str = "https://stat.ripe.net/data/prefix-overview/data.json";
     const TIMEOUT_SECS: u64 = 10;
 
+    /// Creates a new RIPE client with default configuration
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the HTTP client cannot be created
     pub fn new() -> Result<Self, reqwest::Error> {
         let client = ClientBuilder::new()
             .timeout(Duration::from_secs(Self::TIMEOUT_SECS))
             .build()?;
-        Ok(Rite {
+        Ok(Ripe {
             client,
             server_url: Self::DEFAULT_SERVER_URL.to_string(),
         })
     }
 }
 
-impl Asn for Rite {
+impl Asn for Ripe {
     fn lookup_asn(&self, ip: IpAddr) -> Result<Vec<AsnInfo>, Error> {
         let url = format!("{}?resource={}", self.server_url, ip);
         let response = self.client.get(&url).send().map_err(map_reqwest_error)?;
 
         let json_data: serde_json::Value = response.json().map_err(map_reqwest_error)?;
 
-        let asns = json_data["data"]["asns"]
-            .as_array()
-            .unwrap_or(&vec![])
+        // Check if 'data' field exists
+        let data = json_data.get("data").ok_or_else(|| {
+            Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Missing 'data' field in response",
+            )
+        })?;
+
+        // Check if 'asns' field exists and is an array
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).ok_or_else(|| {
+            Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Missing or invalid 'asns' field in response",
+            )
+        })?;
+
+        let asns = asns_array
             .iter()
             .map(|asn_obj| {
                 let asn = asn_obj["asn"]
                     .as_u64()
-                    .map(|n: u64| n.to_string())
+                    .map(|n| n.to_string())
                     .unwrap_or_else(|| "N/A".to_string());
                 let holder = asn_obj["holder"].as_str().unwrap_or("N/A").to_string();
                 AsnInfo { asn, holder }
@@ -59,22 +88,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_rite_new() {
-        let rite = Rite::new();
-        assert!(rite.is_ok());
+    fn test_ripe_new() {
+        let ripe = Ripe::new();
+        assert!(ripe.is_ok());
     }
 
     #[test]
-    fn test_rite_has_default_url() {
-        let rite = Rite::new().unwrap();
-        assert_eq!(rite.server_url, Rite::DEFAULT_SERVER_URL);
+    fn test_ripe_has_default_url() {
+        let ripe = Ripe::new().unwrap();
+        assert_eq!(ripe.server_url, Ripe::DEFAULT_SERVER_URL);
     }
 
     #[test]
-    fn test_rite_has_timeout() {
-        let rite = Rite::new().unwrap();
+    fn test_ripe_has_timeout() {
+        let ripe = Ripe::new().unwrap();
         // Verify the client was created successfully
         // We can't directly test the timeout, but we can ensure the struct is valid
-        assert!(!rite.server_url.is_empty());
+        assert!(!ripe.server_url.is_empty());
     }
 }

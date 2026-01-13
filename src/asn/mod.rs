@@ -5,5 +5,5 @@ pub mod ripe;
 pub mod types;
 
 pub use client::Asn;
-pub use ripe::Rite;
+pub use ripe::Ripe;
 pub use types::AsnInfo;

@@ -1,8 +1,13 @@
 // ASN information types
 
-#[derive(Debug, PartialEq)]
+/// Information about an Autonomous System Number (ASN)
+///
+/// Contains the ASN identifier and the organization that holds it
+#[derive(Debug, PartialEq, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AsnInfo {
+    /// The ASN identifier (e.g., "AS15169")
     pub asn: String,
+    /// The organization or entity that holds this ASN
     pub holder: String,
 }
 
