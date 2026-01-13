@@ -1,4 +1,9 @@
 // ASN lookup logic module
-// This module contains the core ASN lookup functionality
 
-pub mod lookup;
+pub mod client;
+pub mod ripe;
+pub mod types;
+
+pub use client::Asn;
+pub use ripe::Ripe;
+pub use types::AsnInfo;
