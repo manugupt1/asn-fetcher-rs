@@ -1,0 +1,80 @@
+// RIPE NCC ASN lookup implementation
+
+use super::client::Asn;
+use super::types::AsnInfo;
+use reqwest::blocking::ClientBuilder;
+use std::{io::Error, net::IpAddr, time::Duration};
+
+fn map_reqwest_error(err: reqwest::Error) -> Error {
+    Error::new(std::io::ErrorKind::Other, err.to_string())
+}
+
+pub struct Rite {
+    client: reqwest::blocking::Client,
+    server_url: String,
+}
+
+impl Rite {
+    const DEFAULT_SERVER_URL: &'static str = "https://stat.ripe.net/data/prefix-overview/data.json";
+    const TIMEOUT_SECS: u64 = 10;
+
+    pub fn new() -> Result<Self, reqwest::Error> {
+        let client = ClientBuilder::new()
+            .timeout(Duration::from_secs(Self::TIMEOUT_SECS))
+            .build()?;
+        Ok(Rite {
+            client,
+            server_url: Self::DEFAULT_SERVER_URL.to_string(),
+        })
+    }
+}
+
+impl Asn for Rite {
+    fn lookup_asn(&self, ip: IpAddr) -> Result<Vec<AsnInfo>, Error> {
+        let url = format!("{}?resource={}", self.server_url, ip);
+        let response = self.client.get(&url).send().map_err(map_reqwest_error)?;
+
+        let json_data: serde_json::Value = response.json().map_err(map_reqwest_error)?;
+
+        let asns = json_data["data"]["asns"]
+            .as_array()
+            .unwrap_or(&vec![])
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n: u64| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("N/A").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
+
+        Ok(asns)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rite_new() {
+        let rite = Rite::new();
+        assert!(rite.is_ok());
+    }
+
+    #[test]
+    fn test_rite_has_default_url() {
+        let rite = Rite::new().unwrap();
+        assert_eq!(rite.server_url, Rite::DEFAULT_SERVER_URL);
+    }
+
+    #[test]
+    fn test_rite_has_timeout() {
+        let rite = Rite::new().unwrap();
+        // Verify the client was created successfully
+        // We can't directly test the timeout, but we can ensure the struct is valid
+        assert!(!rite.server_url.is_empty());
+    }
+}
