@@ -1,12 +1,17 @@
 [package]
-name = "asn-parser"
+name = "asn-fetcher"
 version = "0.1.0"
 edition = "2021"
 authors = ["Manu Gupta"]
-description = "A CLI tool to get ASN (Autonomous System Number) from IP addresses"
+description = "A CLI tool to fetch ASN (Autonomous System Number) information from IP addresses"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/manugupt1/asn-parser-rs"
+repository = "https://github.com/manugupt1/asn-fetcher-rs"
+homepage = "https://github.com/manugupt1/asn-fetcher-rs"
+documentation = "https://docs.rs/asn-fetcher"
+keywords = ["asn", "ip", "network", "bgp", "autonomous-system"]
+categories = ["command-line-utilities", "network-programming"]
+rust-version = "1.70.0"
 
 [dependencies]
 clap = { version = "4.5.53", features = ["derive"] }

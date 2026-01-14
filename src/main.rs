@@ -1,5 +1,5 @@
-use asn_parser::asn::{Asn, Ripe};
-use asn_parser::cli::Args;
+use asn_fetcher::asn::{Asn, Ripe};
+use asn_fetcher::cli::Args;
 use clap::Parser;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

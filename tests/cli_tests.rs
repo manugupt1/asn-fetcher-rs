@@ -1,6 +1,6 @@
 // Integration tests for the CLI
 
-use asn_parser::asn::{Asn, Ripe};
+use asn_fetcher::asn::{Asn, Ripe};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 /// Integration test for IPv4 ASN lookup
@@ -17,7 +17,10 @@ fn test_ripe_lookup_ipv4() {
     assert!(result.is_ok(), "ASN lookup should succeed for 8.8.8.8");
 
     let asns = result.unwrap();
-    assert!(!asns.is_empty(), "Should return at least one ASN for 8.8.8.8");
+    assert!(
+        !asns.is_empty(),
+        "Should return at least one ASN for 8.8.8.8"
+    );
 }
 
 /// Integration test for IPv6 ASN lookup
