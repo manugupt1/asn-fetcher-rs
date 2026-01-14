@@ -1,6 +1,6 @@
-# asn-parser-rs
+# asn-fetcher-rs
 
-A CLI tool to get ASN (Autonomous System Number) from IP addresses - built with Rust.
+A CLI tool to fetch ASN (Autonomous System Number) information from IP addresses - built with Rust.
 
 ## About
 
@@ -25,8 +25,8 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 # Clone the repository (if you haven't already)
-git clone https://github.com/manugupt1/asn-parser-rs.git
-cd asn-parser-rs
+git clone https://github.com/manugupt1/asn-fetcher-rs.git
+cd asn-fetcher-rs
 
 # Build the project
 cargo build
@@ -42,7 +42,7 @@ cargo build --release
 cargo run -- --ip 8.8.8.8
 
 # Run the optimized binary
-./target/release/asn-parser --ip 8.8.8.8
+./target/release/asn-fetcher --ip 8.8.8.8
 
 # IPv6 support
 cargo run -- --ip 2001:4860:4860::8888
@@ -147,7 +147,7 @@ cargo audit
 As the project grows, organize code into modules:
 
 ```
-asn-parser-rs/
+asn-fetcher-rs/
 ├── Cargo.toml
 ├── README.md
 ├── src/

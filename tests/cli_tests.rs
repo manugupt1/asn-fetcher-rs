@@ -1,6 +1,6 @@
 // Integration tests for the CLI
 
-use asn_parser::asn::{Asn, Ripe};
+use asn_fetcher::asn::{Asn, Ripe};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 /// Integration test for IPv4 ASN lookup

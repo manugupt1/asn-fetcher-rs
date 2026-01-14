@@ -1,4 +1,4 @@
-// Library code for asn-parser
+// Library code for asn-fetcher
 
 pub mod asn;
 pub mod cli;
