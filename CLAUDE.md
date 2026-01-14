@@ -59,6 +59,24 @@ cargo doc
 cargo doc --open
 ```
 
+### Release
+```bash
+# Create a patch release (0.1.0 -> 0.1.1)
+./scripts/release.sh patch
+
+# Create a minor release (0.1.0 -> 0.2.0)
+./scripts/release.sh minor
+
+# Create a major release (0.1.0 -> 1.0.0)
+./scripts/release.sh major
+```
+
+The release script will:
+1. Run quality checks (tests, clippy, format)
+2. Update version in Cargo.toml
+3. Create git commit and tag
+4. Push to GitHub (triggers automated publish to crates.io)
+
 ## Architecture
 
 ### Core Module Structure
