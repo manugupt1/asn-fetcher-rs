@@ -164,6 +164,52 @@ asn-fetcher-rs/
     └── integration_test.rs
 ```
 
+## Release Process
+
+This project uses an automated release script to manage versions and publish to crates.io.
+
+### Creating a Release
+
+To create a new release, use the release script with a semantic version bump type:
+
+```bash
+# Patch release (0.1.0 -> 0.1.1) - for bug fixes
+./scripts/release.sh patch
+
+# Minor release (0.1.0 -> 0.2.0) - for new features
+./scripts/release.sh minor
+
+# Major release (0.1.0 -> 1.0.0) - for breaking changes
+./scripts/release.sh major
+```
+
+### What the Script Does
+
+1. **Verifies Git State**: Ensures your working directory is clean and you're ready to release
+2. **Runs Quality Checks**: Executes tests, clippy, and format checks
+3. **Bumps Version**: Updates version in `Cargo.toml` based on the bump type
+4. **Creates Git Commit**: Commits the version change with message `chore: bump version to vX.Y.Z`
+5. **Creates Git Tag**: Tags the commit with `vX.Y.Z`
+6. **Pushes to GitHub**: Pushes both the commit and tag to the remote repository
+7. **Triggers CI/CD**: GitHub Actions automatically publishes to crates.io and creates a GitHub Release
+
+### Release Workflow
+
+The automated publish workflow (`.github/workflows/publish.yml`) is triggered when you push a tag matching `v*.*.*`. It will:
+
+- Run all quality checks (tests, clippy, format validation)
+- Verify the tag version matches `Cargo.toml` version
+- Publish the crate to crates.io (using `CARGO_REGISTRY_TOKEN` secret)
+- Create a GitHub Release with auto-generated release notes
+
+### Prerequisites for Publishing
+
+Before your first release, ensure:
+
+1. You have collaborator access to the GitHub repository
+2. The repository has a `CARGO_REGISTRY_TOKEN` secret configured (for crates.io publishing)
+3. All tests pass and code is properly formatted
+
 ## Learning Resources
 
 ### Rust Programming
