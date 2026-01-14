@@ -75,7 +75,10 @@ The release script will:
 1. Run quality checks (tests, clippy, format)
 2. Update version in Cargo.toml
 3. Create git commit and tag
-4. Push to GitHub (triggers automated publish to crates.io)
+4. Push to GitHub (triggers CI workflow on main)
+5. After CI passes, publish workflow runs and publishes to crates.io
+
+**Important**: The publish workflow only runs after all CI checks pass on the main branch. This ensures that releases are only published when the code is verified to be stable.
 
 ## Architecture
 
