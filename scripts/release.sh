@@ -94,10 +94,10 @@ update_cargo_toml() {
 
     # Use sed to replace the version (macOS and Linux compatible)
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        sed -i '' "0,/^version = /s/^version = .*/version = \"${new_version}\"/" Cargo.toml
+        # macOS (BSD sed)
+        sed -i '' "s/^version = .*/version = \"${new_version}\"/" Cargo.toml
     else
-        # Linux
+        # Linux (GNU sed)
         sed -i "0,/^version = /s/^version = .*/version = \"${new_version}\"/" Cargo.toml
     fi
 }
