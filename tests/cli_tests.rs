@@ -17,7 +17,10 @@ fn test_ripe_lookup_ipv4() {
     assert!(result.is_ok(), "ASN lookup should succeed for 8.8.8.8");
 
     let asns = result.unwrap();
-    assert!(!asns.is_empty(), "Should return at least one ASN for 8.8.8.8");
+    assert!(
+        !asns.is_empty(),
+        "Should return at least one ASN for 8.8.8.8"
+    );
 }
 
 /// Integration test for IPv6 ASN lookup
