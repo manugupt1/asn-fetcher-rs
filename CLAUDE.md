@@ -17,10 +17,10 @@ cargo build
 cargo build --release
 
 # Run with an IP address
-cargo run -- --ip 8.8.8.8
+cargo run -- 8.8.8.8
 
 # Run release binary directly
-./target/release/asn-fetcher --ip 8.8.8.8
+./target/release/asn-fetcher 8.8.8.8
 ```
 
 ### Testing
