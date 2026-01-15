@@ -1,19 +1,11 @@
 // RIPE NCC ASN lookup implementation
 
-use super::client::Asn;
+use crate::asn::client::map_reqwest_error;
+
+use super::client::*;
 use super::types::AsnInfo;
 use reqwest::blocking::ClientBuilder;
 use std::{io::Error, net::IpAddr, time::Duration};
-
-fn map_reqwest_error(err: reqwest::Error) -> Error {
-    if err.is_timeout() {
-        Error::new(std::io::ErrorKind::TimedOut, err.to_string())
-    } else if err.is_connect() {
-        Error::new(std::io::ErrorKind::ConnectionRefused, err.to_string())
-    } else {
-        Error::new(std::io::ErrorKind::Other, err.to_string())
-    }
-}
 
 /// RIPE NCC ASN lookup client
 ///
@@ -74,7 +66,7 @@ impl Asn for Ripe {
                     .as_u64()
                     .map(|n| n.to_string())
                     .unwrap_or_else(|| "N/A".to_string());
-                let holder = asn_obj["holder"].as_str().unwrap_or("N/A").to_string();
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
                 AsnInfo { asn, holder }
             })
             .collect();

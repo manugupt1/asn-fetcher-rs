@@ -21,3 +21,13 @@ pub trait Asn {
     /// API errors, or invalid response data
     fn lookup_asn(&self, ip: IpAddr) -> Result<Vec<AsnInfo>, Error>;
 }
+
+pub fn map_reqwest_error(err: reqwest::Error) -> Error {
+    if err.is_timeout() {
+        Error::new(std::io::ErrorKind::TimedOut, err.to_string())
+    } else if err.is_connect() {
+        Error::new(std::io::ErrorKind::ConnectionRefused, err.to_string())
+    } else {
+        Error::new(std::io::ErrorKind::Other, err.to_string())
+    }
+}
