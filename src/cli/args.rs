@@ -3,15 +3,15 @@
 use clap::Parser;
 use std::net::IpAddr;
 
-/// Command-line arguments for the ASN parser
+/// Command-line arguments for ASN lookup
 #[derive(Parser, Debug)]
 #[command(author, version, about = "A tool to lookup ASN from IP addresses")]
 pub struct Args {
-    /// IP address to lookup ASN for
+    /// IP address to lookup ASN for (IPv4 or IPv6)
     #[arg()]
     pub ip: IpAddr,
 
-    /// From specify the source DB of the ASN lookup
+    /// Specify the source DB for the ASN lookup
     #[arg(short, long, default_value = "ripe")]
     pub source: String,
 }

@@ -48,9 +48,13 @@ fn test_ripe_client_creation() {
     assert!(result.is_ok(), "Should be able to create a Ripe client");
 }
 
+fn cli_command() -> Command {
+    Command::new(assert_cmd::cargo::cargo_bin!("asn-fetcher"))
+}
+
 #[test]
 fn test_valid_ipv4() {
-    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("asn-fetcher"));
+    let mut cmd = cli_command();
     cmd.env("ASN_FETCHER_SKIP_LOOKUP", "1");
     cmd.arg("127.0.0.1");
     cmd.assert().success();
@@ -58,7 +62,7 @@ fn test_valid_ipv4() {
 
 #[test]
 fn test_valid_ipv6() {
-    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("asn-fetcher"));
+    let mut cmd = cli_command();
     cmd.env("ASN_FETCHER_SKIP_LOOKUP", "1");
     cmd.arg("::1");
     cmd.assert().success();
@@ -66,7 +70,7 @@ fn test_valid_ipv6() {
 
 #[test]
 fn test_invalid_ip() {
-    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("asn-fetcher"));
+    let mut cmd = cli_command();
     cmd.arg("not-an-ip");
     cmd.assert().failure();
 }
