@@ -57,7 +57,9 @@ fn test_valid_ipv4() {
     let mut cmd = cli_command();
     cmd.env("ASN_FETCHER_SKIP_LOOKUP", "1");
     cmd.arg("127.0.0.1");
-    cmd.assert().success();
+    let assert = cmd.assert().success();
+    let stdout = String::from_utf8_lossy(&assert.get_output().stdout);
+    assert!(stdout.contains("127.0.0.1"));
 }
 
 #[test]
@@ -65,7 +67,19 @@ fn test_valid_ipv6() {
     let mut cmd = cli_command();
     cmd.env("ASN_FETCHER_SKIP_LOOKUP", "1");
     cmd.arg("::1");
-    cmd.assert().success();
+    let assert = cmd.assert().success();
+    let stdout = String::from_utf8_lossy(&assert.get_output().stdout);
+    assert!(stdout.contains("::1"));
+}
+
+#[test]
+fn test_valid_ipv4_with_source() {
+    let mut cmd = cli_command();
+    cmd.env("ASN_FETCHER_SKIP_LOOKUP", "1");
+    cmd.arg("127.0.0.1").arg("--source").arg("ipapi");
+    let assert = cmd.assert().success();
+    let stdout = String::from_utf8_lossy(&assert.get_output().stdout);
+    assert!(stdout.contains("127.0.0.1"));
 }
 
 #[test]
