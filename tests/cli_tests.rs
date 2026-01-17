@@ -68,10 +68,10 @@ fn test_valid_ipv6() {
 
 #[test]
 fn test_valid_ipv4_with_source() {
-    let args = Args::try_parse_from(["asn-fetcher", "127.0.0.1", "--source", "ipapi"])
+    let args = Args::try_parse_from(["asn-fetcher", "127.0.0.1", "--source", "ripe"])
         .expect("Valid IPv4 and source should parse");
     assert_eq!(args.ip, IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
-    assert_eq!(args.source, "ipapi");
+    assert_eq!(args.source, "ripe");
 }
 
 #[test]
