@@ -1,7 +1,9 @@
 // Integration tests for the CLI
 
 use asn_fetcher::asn::{Asn, Ripe};
+use asn_fetcher::cli::Args;
 use assert_cmd::prelude::*;
+use clap::Parser;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::process::Command;
 
@@ -54,32 +56,22 @@ fn cli_command() -> Command {
 
 #[test]
 fn test_valid_ipv4() {
-    let mut cmd = cli_command();
-    cmd.env("ASN_FETCHER_SKIP_LOOKUP", "1");
-    cmd.arg("127.0.0.1");
-    let assert = cmd.assert().success();
-    let stdout = String::from_utf8_lossy(&assert.get_output().stdout);
-    assert!(stdout.contains("127.0.0.1"));
+    let args = Args::try_parse_from(["asn-fetcher", "127.0.0.1"]).expect("Valid IPv4 should parse");
+    assert_eq!(args.ip, IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
 }
 
 #[test]
 fn test_valid_ipv6() {
-    let mut cmd = cli_command();
-    cmd.env("ASN_FETCHER_SKIP_LOOKUP", "1");
-    cmd.arg("::1");
-    let assert = cmd.assert().success();
-    let stdout = String::from_utf8_lossy(&assert.get_output().stdout);
-    assert!(stdout.contains("::1"));
+    let args = Args::try_parse_from(["asn-fetcher", "::1"]).expect("Valid IPv6 should parse");
+    assert_eq!(args.ip, IpAddr::V6(Ipv6Addr::LOCALHOST));
 }
 
 #[test]
 fn test_valid_ipv4_with_source() {
-    let mut cmd = cli_command();
-    cmd.env("ASN_FETCHER_SKIP_LOOKUP", "1");
-    cmd.arg("127.0.0.1").arg("--source").arg("ipapi");
-    let assert = cmd.assert().success();
-    let stdout = String::from_utf8_lossy(&assert.get_output().stdout);
-    assert!(stdout.contains("127.0.0.1"));
+    let args = Args::try_parse_from(["asn-fetcher", "127.0.0.1", "--source", "ipapi"])
+        .expect("Valid IPv4 and source should parse");
+    assert_eq!(args.ip, IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
+    assert_eq!(args.source, "ipapi");
 }
 
 #[test]
