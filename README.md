@@ -100,6 +100,12 @@ Use the release script to create a new version:
 ./scripts/release.sh major  # 0.1.0 -> 1.0.0
 ```
 
+The release process:
+1. The script runs quality checks locally
+2. Creates a version bump commit and tag
+3. Pushes to GitHub, triggering the CI workflow
+4. After CI passes, the publish workflow automatically publishes to crates.io
+
 ## Roadmap
 
 - [x] Create starter CLI template

@@ -1,5 +1,8 @@
 name: Publish to crates.io
 
+# This workflow runs after the CI workflow completes successfully on the main branch.
+# It checks if the commit has a version tag (v*.*.*), and if so, publishes to crates.io.
+# This ensures all CI checks pass before publishing.
 on:
   workflow_run:
     workflows: ["CI"]

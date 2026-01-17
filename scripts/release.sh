@@ -7,7 +7,7 @@
 # 1. Run quality checks (tests, clippy, format)
 # 2. Bump the version in Cargo.toml
 # 3. Create a git commit and tag
-# 4. Push to GitHub (which triggers the publish workflow)
+# 4. Push to GitHub (triggers CI, then publish workflow after CI passes)
 
 set -e  # Exit on error
 
@@ -252,8 +252,9 @@ main() {
     echo ""
     info "Next steps:"
     info "  1. Monitor GitHub Actions: https://github.com/manugupt1/asn-fetcher-rs/actions"
-    info "  2. The publish workflow will:"
-    info "     - Run quality checks"
+    info "  2. The CI workflow will run first on the main branch commit"
+    info "  3. Once CI passes, the publish workflow will:"
+    info "     - Verify the version tag"
     info "     - Publish to crates.io"
     info "     - Create a GitHub Release"
     echo ""
