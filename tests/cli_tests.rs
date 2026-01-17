@@ -1,7 +1,11 @@
 // Integration tests for the CLI
 
 use asn_fetcher::asn::{Asn, Ripe};
+use asn_fetcher::cli::Args;
+use assert_cmd::prelude::*;
+use clap::Parser;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::process::Command;
 
 /// Integration test for IPv4 ASN lookup
 ///
@@ -44,4 +48,35 @@ fn test_ripe_lookup_ipv6() {
 fn test_ripe_client_creation() {
     let result = Ripe::new();
     assert!(result.is_ok(), "Should be able to create a Ripe client");
+}
+
+fn cli_command() -> Command {
+    Command::new(assert_cmd::cargo::cargo_bin!("asn-fetcher"))
+}
+
+#[test]
+fn test_valid_ipv4() {
+    let args = Args::try_parse_from(["asn-fetcher", "127.0.0.1"]).expect("Valid IPv4 should parse");
+    assert_eq!(args.ip, IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
+}
+
+#[test]
+fn test_valid_ipv6() {
+    let args = Args::try_parse_from(["asn-fetcher", "::1"]).expect("Valid IPv6 should parse");
+    assert_eq!(args.ip, IpAddr::V6(Ipv6Addr::LOCALHOST));
+}
+
+#[test]
+fn test_valid_ipv4_with_source() {
+    let args = Args::try_parse_from(["asn-fetcher", "127.0.0.1", "--source", "ripe"])
+        .expect("Valid IPv4 and source should parse");
+    assert_eq!(args.ip, IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
+    assert_eq!(args.source, "ripe");
+}
+
+#[test]
+fn test_invalid_ip() {
+    let mut cmd = cli_command();
+    cmd.arg("not-an-ip");
+    cmd.assert().failure();
 }

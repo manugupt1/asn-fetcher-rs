@@ -1,7 +1,6 @@
 use asn_fetcher::asn::{Asn, IPApi, Ripe};
 use asn_fetcher::cli::Args;
 use clap::Parser;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 

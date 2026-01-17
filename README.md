@@ -44,16 +44,16 @@ cargo build --release
 
 ```bash
 # Using RIPE NCC API (default)
-cargo run -- --ip 8.8.8.8
+cargo run -- 8.8.8.8
 
 # Using ipapi.co
-cargo run -- --ip 8.8.8.8 --source ipapi
+cargo run -- 8.8.8.8 --source ipapi
 
 # IPv6 support
-cargo run -- --ip 2001:4860:4860::8888
+cargo run -- 2001:4860:4860::8888
 
 # Run the optimized binary directly
-./target/release/asn-fetcher --ip 8.8.8.8
+./target/release/asn-fetcher 8.8.8.8
 ```
 
 ### API Keys
@@ -62,7 +62,7 @@ For ipapi.co with higher rate limits, set the `IPAPI_API_KEY` environment variab
 
 ```bash
 export IPAPI_API_KEY=your_api_key_here
-cargo run -- --ip 8.8.8.8 --source ipapi
+cargo run -- 8.8.8.8 --source ipapi
 ```
 
 ## Development
