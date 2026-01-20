@@ -59,19 +59,32 @@ impl Asn for Ripe {
             )
         })?;
 
-        let asns = asns_array
+        let asns: Result<Vec<AsnInfo>, Error> = asns_array
             .iter()
             .map(|asn_obj| {
                 let asn = asn_obj["asn"]
                     .as_u64()
                     .map(|n| n.to_string())
-                    .unwrap_or_else(|| "N/A".to_string());
-                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
-                AsnInfo { asn, holder }
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'asn' field in ASN object",
+                        )
+                    })?;
+                let holder = asn_obj["holder"]
+                    .as_str()
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'holder' field in ASN object",
+                        )
+                    })?
+                    .to_string();
+                Ok(AsnInfo { asn, holder })
             })
             .collect();
 
-        Ok(asns)
+        asns
     }
 }
 
@@ -97,5 +110,191 @@ mod tests {
         // Verify the client was created successfully
         // We can't directly test the timeout, but we can ensure the struct is valid
         assert!(!ripe.server_url.is_empty());
+    }
+
+    #[test]
+    fn test_parse_valid_response() {
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"asn": 15169, "holder": "Google LLC"},
+                    {"asn": 13335, "holder": "Cloudflare, Inc."}
+                ]
+            }
+        });
+
+        // Simulate parsing logic
+        let data = json_data.get("data").unwrap();
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
+
+        let result: Result<Vec<AsnInfo>, Error> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'asn' field in ASN object",
+                        )
+                    })?;
+                let holder = asn_obj["holder"]
+                    .as_str()
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'holder' field in ASN object",
+                        )
+                    })?
+                    .to_string();
+                Ok(AsnInfo { asn, holder })
+            })
+            .collect();
+
+        assert!(result.is_ok());
+        let asns = result.unwrap();
+        assert_eq!(asns.len(), 2);
+        assert_eq!(asns[0].asn, "15169");
+        assert_eq!(asns[0].holder, "Google LLC");
+    }
+
+    #[test]
+    fn test_parse_missing_asn_field() {
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"holder": "Google LLC"}  // Missing asn field
+                ]
+            }
+        });
+
+        let data = json_data.get("data").unwrap();
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
+
+        let result: Result<Vec<AsnInfo>, Error> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'asn' field in ASN object",
+                        )
+                    })?;
+                let holder = asn_obj["holder"]
+                    .as_str()
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'holder' field in ASN object",
+                        )
+                    })?
+                    .to_string();
+                Ok(AsnInfo { asn, holder })
+            })
+            .collect();
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
+        assert!(err.to_string().contains("asn"));
+    }
+
+    #[test]
+    fn test_parse_missing_holder_field() {
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"asn": 15169}  // Missing holder field
+                ]
+            }
+        });
+
+        let data = json_data.get("data").unwrap();
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
+
+        let result: Result<Vec<AsnInfo>, Error> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'asn' field in ASN object",
+                        )
+                    })?;
+                let holder = asn_obj["holder"]
+                    .as_str()
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'holder' field in ASN object",
+                        )
+                    })?
+                    .to_string();
+                Ok(AsnInfo { asn, holder })
+            })
+            .collect();
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
+        assert!(err.to_string().contains("holder"));
+    }
+
+    #[test]
+    fn test_parse_invalid_asn_type() {
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"asn": "not-a-number", "holder": "Google LLC"}  // asn should be a number
+                ]
+            }
+        });
+
+        let data = json_data.get("data").unwrap();
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
+
+        let result: Result<Vec<AsnInfo>, Error> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'asn' field in ASN object",
+                        )
+                    })?;
+                let holder = asn_obj["holder"]
+                    .as_str()
+                    .ok_or_else(|| {
+                        Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Missing or invalid 'holder' field in ASN object",
+                        )
+                    })?
+                    .to_string();
+                Ok(AsnInfo { asn, holder })
+            })
+            .collect();
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
     }
 }
