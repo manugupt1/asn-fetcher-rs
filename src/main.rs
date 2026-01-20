@@ -4,11 +4,18 @@ use clap::Parser;
 
 /// Creates the appropriate ASN fetcher based on the source string
 fn create_asn_fetcher(source: &str) -> Result<Box<dyn Asn>, Box<dyn std::error::Error>> {
-    match source {
-        "ipapi" => Ok(Box::new(IPApi::new()?)),
-        "cymru-whois" => Ok(Box::new(TeamCymruWhois)),
-        _ => Ok(Box::new(Ripe::new()?)),
-    }
+    let (provider, provider_name) = match source {
+        "ipapi" => (Box::new(IPApi::new()?) as Box<dyn Asn>, "ipapi"),
+        "cymru-whois" => (Box::new(TeamCymruWhois) as Box<dyn Asn>, "cymru-whois"),
+        "ripe" => (Box::new(Ripe::new()?) as Box<dyn Asn>, "ripe"),
+        _ => {
+            eprintln!("Unknown provider '{}', falling back to default provider: ripe", source);
+            return Ok(Box::new(Ripe::new()?));
+        }
+    };
+
+    eprintln!("Using provider: {}", provider_name);
+    Ok(provider)
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
