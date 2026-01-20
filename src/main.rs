@@ -9,7 +9,10 @@ fn create_asn_fetcher(source: &str) -> Result<Box<dyn Asn>, Box<dyn std::error::
         "cymru-whois" => (Box::new(TeamCymruWhois) as Box<dyn Asn>, "cymru-whois"),
         "ripe" => (Box::new(Ripe::new()?) as Box<dyn Asn>, "ripe"),
         _ => {
-            eprintln!("Unknown provider '{}', falling back to default provider: ripe", source);
+            eprintln!(
+                "Unknown provider '{}', falling back to default provider: ripe",
+                source
+            );
             return Ok(Box::new(Ripe::new()?));
         }
     };
