@@ -87,7 +87,9 @@ src/
 ├── lib.rs           # Re-exports public modules
 ├── asn/             # ASN lookup logic
 │   ├── client.rs    # Asn trait definition for lookup providers
+│   ├── teamcymru.rs # TeamCymruWhois struct implementing Asn trait via whois
 │   ├── ripe.rs      # Ripe struct implementing Asn trait via RIPE NCC API
+│   ├── ipapi.rs     # IPApi struct implementing Asn trait via ipapi.co API
 │   └── types.rs     # AsnInfo struct
 ├── cli/             # CLI argument handling
 │   └── args.rs      # Args struct using clap derive
@@ -97,7 +99,7 @@ src/
 
 ### Key Design Patterns
 
-**Trait-Based Provider System**: The `Asn` trait in `src/asn/client.rs` defines the interface for ASN lookup providers. The `Ripe` struct implements this trait for the RIPE NCC API. This design allows adding more providers (ipapi.co, team-cymru, MaxMind) without changing the interface.
+**Trait-Based Provider System**: The `Asn` trait in `src/asn/client.rs` defines the interface for ASN lookup providers. Implementations include `Ripe` (RIPE NCC API), `IPApi` (ipapi.co API), and `TeamCymruWhois` (Team Cymru whois). This design allows adding more providers (MaxMind) without changing the interface.
 
 **Error Handling**: Uses `Result<T, std::io::Error>` for error propagation. The `ripe.rs` module includes `map_reqwest_error()` to convert reqwest errors to IO errors with appropriate error kinds (TimedOut, ConnectionRefused, Other).
 
@@ -105,7 +107,11 @@ src/
 
 ### API Integration
 
-The RIPE lookup (`src/asn/ripe.rs`) queries:
+**Team Cymru** (`src/asn/teamcymru.rs`): Uses system `whois` command to query `whois.cymru.com`. Requires `whois` to be installed.
+
+**IPApi** (`src/asn/ipapi.rs`): Queries `ipapi.co` API. Optional API key via `IPAPI_API_KEY` environment variable.
+
+**RIPE lookup** (`src/asn/ripe.rs`) queries:
 - URL: `https://stat.ripe.net/data/prefix-overview/data.json?resource={ip}`
 - Parses JSON response extracting `data.asns[]` array
 - Returns `Vec<AsnInfo>` containing ASN numbers and holder names
