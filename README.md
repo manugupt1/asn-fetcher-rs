@@ -73,12 +73,33 @@ cargo run -- 8.8.8.8 --source ipapi
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (excluding tests that require network/whois)
 cargo test
 
 # Run tests with output visible
 cargo test -- --nocapture
+
+# Run ALL tests including network-dependent and system-dependent tests
+# (requires whois command and network access)
+cargo test -- --ignored --test-threads=1
+
+# Run only integration tests
+cargo test --test integration_test
+
+# Run only integration tests that don't require network/system dependencies
+cargo test --test integration_test -- --skip ignored
 ```
+
+#### Test Categories
+
+- **Unit tests**: Fast tests that run in CI without network access
+- **Integration tests** (not ignored): Mock-based error scenario tests that run in CI
+- **Integration tests** (ignored): Tests requiring real network access or system commands like `whois`
+
+The ignored tests are marked with `#[ignore]` and test scenarios that can't be reliably mocked:
+- Network timeouts (requires actual timeout behavior)
+- Missing whois command (requires specific system configuration)
+- Real provider API behavior
 
 ### Code Quality
 
