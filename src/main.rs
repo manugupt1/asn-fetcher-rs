@@ -21,10 +21,24 @@ fn create_asn_fetcher(source: &str) -> Result<Box<dyn Asn>, Box<dyn std::error::
     Ok(provider)
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
     let args = Args::parse();
-    let asn_fetcher = create_asn_fetcher(&args.source)?;
-    let asns = asn_fetcher.lookup_asn(args.ip)?;
+
+    let asn_fetcher = match create_asn_fetcher(&args.source) {
+        Ok(fetcher) => fetcher,
+        Err(e) => {
+            eprintln!("Error: Failed to create ASN fetcher: {}", e);
+            std::process::exit(1);
+        }
+    };
+
+    let asns = match asn_fetcher.lookup_asn(args.ip) {
+        Ok(asns) => asns,
+        Err(e) => {
+            eprintln!("Error: Failed to lookup ASN for {}: {}", args.ip, e);
+            std::process::exit(1);
+        }
+    };
+
     asns.iter().for_each(|asn| println!("{:?}", asn));
-    Ok(())
 }
