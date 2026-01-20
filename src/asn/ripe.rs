@@ -34,6 +34,24 @@ impl Ripe {
             server_url: Self::DEFAULT_SERVER_URL.to_string(),
         })
     }
+
+    /// Creates a new RIPE client with custom server URL and timeout
+    ///
+    /// This is primarily for testing purposes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the HTTP client cannot be created
+    #[doc(hidden)]
+    pub fn with_config(server_url: String, timeout_secs: u64) -> Result<Self, reqwest::Error> {
+        let client = ClientBuilder::new()
+            .timeout(Duration::from_secs(timeout_secs))
+            .build()?;
+        Ok(Ripe {
+            client,
+            server_url,
+        })
+    }
 }
 
 impl Asn for Ripe {

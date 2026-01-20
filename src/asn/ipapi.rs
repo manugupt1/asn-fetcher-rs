@@ -8,24 +8,47 @@ use reqwest::blocking::ClientBuilder;
 // IPAPI ASN Lookup client
 pub struct IPApi {
     client: reqwest::blocking::Client,
+    base_url: String,
 }
 
 impl IPApi {
+    const DEFAULT_BASE_URL: &'static str = "https://ipapi.co";
+
     pub fn new() -> Result<Self, std::io::Error> {
         let client = ClientBuilder::new()
             .user_agent("asn-fetcher/0.1.1")
             .timeout(std::time::Duration::from_secs(10))
             .build()
             .map_err(map_reqwest_error)?;
-        Ok(IPApi { client })
+        Ok(IPApi { 
+            client,
+            base_url: Self::DEFAULT_BASE_URL.to_string(),
+        })
+    }
+
+    /// Creates a new IPApi client with custom base URL and timeout
+    ///
+    /// This is primarily for testing purposes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the HTTP client cannot be created
+    #[doc(hidden)]
+    pub fn with_config(base_url: String, timeout_secs: u64) -> Result<Self, std::io::Error> {
+        let client = ClientBuilder::new()
+            .user_agent("asn-fetcher/0.1.1")
+            .timeout(std::time::Duration::from_secs(timeout_secs))
+            .build()
+            .map_err(map_reqwest_error)?;
+        Ok(IPApi { client, base_url })
     }
 }
 
 impl Asn for IPApi {
     fn lookup_asn(&self, ip: IpAddr) -> Result<Vec<AsnInfo>, std::io::Error> {
         let url = match env::var("IPAPI_API_KEY") {
-            Ok(api_key) => format!("https://ipapi.co/{}/json?key={}", ip, api_key),
-            Err(_) => format!("https://ipapi.co/{}/json", ip),
+            Ok(api_key) => format!("{}/{}/json?key={}", self.base_url, ip, api_key),
+            Err(_) => format!("{}/{}/json", self.base_url, ip),
         };
 
         let response = self.client.get(&url).send().map_err(map_reqwest_error)?;
