@@ -13,7 +13,7 @@ fn create_asn_fetcher(source: &str) -> Result<Box<dyn Asn>, Box<dyn std::error::
                 "Unknown provider '{}', falling back to default provider: ripe",
                 source
             );
-            return Ok(Box::new(Ripe::new()?));
+            (Box::new(Ripe::new()?) as Box<dyn Asn>, "ripe")
         }
     };
 
