@@ -47,10 +47,7 @@ impl Ripe {
         let client = ClientBuilder::new()
             .timeout(Duration::from_secs(timeout_secs))
             .build()?;
-        Ok(Ripe {
-            client,
-            server_url,
-        })
+        Ok(Ripe { client, server_url })
     }
 }
 

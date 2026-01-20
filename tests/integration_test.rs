@@ -38,7 +38,7 @@ mod ripe_error_tests {
     #[test]
     fn test_ripe_malformed_json_response() {
         let (mut server, ripe) = setup_mock_ripe(10);
-        
+
         // Mock server returns invalid JSON
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -67,7 +67,7 @@ mod ripe_error_tests {
     #[test]
     fn test_ripe_missing_data_field() {
         let (mut server, ripe) = setup_mock_ripe(10);
-        
+
         // Mock server returns JSON without 'data' field
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -94,7 +94,7 @@ mod ripe_error_tests {
     #[test]
     fn test_ripe_missing_asns_field() {
         let (mut server, ripe) = setup_mock_ripe(10);
-        
+
         // Mock server returns JSON without 'asns' field
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -121,7 +121,7 @@ mod ripe_error_tests {
     #[test]
     fn test_ripe_http_error_404() {
         let (mut server, ripe) = setup_mock_ripe(10);
-        
+
         // Mock server returns 404 Not Found
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -141,7 +141,7 @@ mod ripe_error_tests {
     #[test]
     fn test_ripe_http_error_500() {
         let (mut server, ripe) = setup_mock_ripe(10);
-        
+
         // Mock server returns 500 Internal Server Error
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -224,7 +224,7 @@ mod ipapi_error_tests {
     #[test]
     fn test_ipapi_malformed_json_response() {
         let (mut server, ipapi) = setup_mock_ipapi(10);
-        
+
         // Mock server returns invalid JSON
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -251,7 +251,7 @@ mod ipapi_error_tests {
     #[test]
     fn test_ipapi_rate_limit_error() {
         let (mut server, ipapi) = setup_mock_ipapi(10);
-        
+
         // Mock server returns rate limit error (429)
         // IPApi typically returns an error JSON object
         let mock = server
@@ -279,7 +279,7 @@ mod ipapi_error_tests {
     #[test]
     fn test_ipapi_api_error_response() {
         let (mut server, ipapi) = setup_mock_ipapi(10);
-        
+
         // Mock server returns an API error
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -306,7 +306,7 @@ mod ipapi_error_tests {
     #[test]
     fn test_ipapi_http_error_500() {
         let (mut server, ipapi) = setup_mock_ipapi(10);
-        
+
         // Mock server returns 500 Internal Server Error
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -368,7 +368,7 @@ mod ipapi_error_tests {
     #[test]
     fn test_ipapi_missing_asn_field() {
         let (mut server, ipapi) = setup_mock_ipapi(10);
-        
+
         // Mock server returns JSON without asn field
         let mock = server
             .mock("GET", mockito::Matcher::Any)
@@ -405,7 +405,7 @@ mod teamcymru_error_tests {
         // It's difficult to test reliably without mocking the command execution
         // This is left as an ignored test to be run manually in environments
         // where whois is not installed
-        
+
         let whois = TeamCymruWhois::default();
         let ip = IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8));
         let result = whois.lookup_asn(ip);
@@ -427,7 +427,7 @@ mod teamcymru_error_tests {
     fn test_teamcymru_whois_timeout() {
         // This test requires actual network access to Team Cymru's whois server
         // It's marked as ignored because it depends on external network resources
-        
+
         let whois = TeamCymruWhois::default();
         // Use a reserved/bogon IP that might cause issues
         let ip = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
@@ -443,7 +443,7 @@ mod teamcymru_error_tests {
     fn test_teamcymru_private_ip() {
         // This test requires actual whois command
         // Private IPs may not have ASN information
-        
+
         let whois = TeamCymruWhois::default();
         let ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
         let result = whois.lookup_asn(ip);
@@ -479,4 +479,3 @@ mod cross_provider_tests {
         // TeamCymruWhois doesn't have a constructor that can fail
     }
 }
-

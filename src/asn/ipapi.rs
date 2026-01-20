@@ -20,7 +20,7 @@ impl IPApi {
             .timeout(std::time::Duration::from_secs(10))
             .build()
             .map_err(map_reqwest_error)?;
-        Ok(IPApi { 
+        Ok(IPApi {
             client,
             base_url: Self::DEFAULT_BASE_URL.to_string(),
         })
