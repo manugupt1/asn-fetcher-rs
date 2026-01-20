@@ -41,6 +41,13 @@ impl Asn for Ripe {
         let url = format!("{}?resource={}", self.server_url, ip);
         let response = self.client.get(&url).send().map_err(map_reqwest_error)?;
 
+        if !response.status().is_success() {
+            return Err(Error::new(
+                std::io::ErrorKind::Other,
+                format!("HTTP error: {}", response.status()),
+            ));
+        }
+
         let json_data: serde_json::Value = response.json().map_err(map_reqwest_error)?;
 
         // Check if 'data' field exists
