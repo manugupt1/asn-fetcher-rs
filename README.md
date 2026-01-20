@@ -8,14 +8,14 @@ This tool queries an IP address and retrieves its associated Autonomous System N
 
 ## Features
 
-- **Multiple ASN Data Sources**: RIPE NCC API and ipapi.co support
+- **Multiple ASN Data Sources**: RIPE NCC API, ipapi.co, and Team Cymru whois support
 - **IPv4 and IPv6 Support**: Query any IP address type
 - **Fast and Reliable**: Built with Rust for performance and safety
 - **Simple CLI**: Easy-to-use command-line interface
 
 ## Current Status
 
-✅ **Fully Functional** - ASN lookup with RIPE NCC API and ipapi.co
+✅ **Fully Functional** - ASN lookup with RIPE NCC API, ipapi.co, and Team Cymru whois
 
 ## Prerequisites
 
@@ -48,6 +48,9 @@ cargo run -- 8.8.8.8
 
 # Using ipapi.co
 cargo run -- 8.8.8.8 --source ipapi
+
+# Using Team Cymru whois (requires whois command)
+cargo run -- 8.8.8.8 --source cymru-whois
 
 # IPv6 support
 cargo run -- 2001:4860:4860::8888
@@ -115,7 +118,8 @@ The release process:
 - [x] Create comprehensive tests
 - [x] Support additional ASN data sources (ipapi.co)
 - [ ] Add configuration file support
-- [ ] Support additional data sources (team-cymru, MaxMind GeoIP2)
+- [x] Support additional data sources (team-cymru whois)
+- [ ] Support MaxMind GeoIP2
 - [ ] Publish to crates.io
 
 ## Contributing
