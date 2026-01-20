@@ -1,4 +1,5 @@
 use super::Asn;
+use crate::asn::client::format_provider_error;
 use std::{
     io::{BufRead, Error, ErrorKind},
     process::{Command, Stdio},
@@ -46,7 +47,10 @@ impl Asn for TeamCymruWhois {
                     let stderr = String::from_utf8_lossy(&output.stderr);
                     return Err(Error::new(
                         std::io::ErrorKind::Other,
-                        format!("whois failed: {}", stderr.trim()),
+                        format_provider_error(
+                            "TeamCymruWhois",
+                            &format!("Command failed: {}", stderr.trim()),
+                        ),
                     ));
                 }
                 output
@@ -54,7 +58,10 @@ impl Asn for TeamCymruWhois {
             Err(e) => {
                 return Err(Error::new(
                     ErrorKind::Other,
-                    format!("whois failed: {}, is whois installed?", e),
+                    format_provider_error(
+                        "TeamCymruWhois",
+                        &format!("Command failed: {}, is whois installed?", e),
+                    ),
                 ))
             }
         };

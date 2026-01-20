@@ -3,6 +3,7 @@ use std::net::IpAddr;
 
 use super::client::*;
 use super::types::AsnInfo;
+use crate::asn::client::format_provider_error;
 use reqwest::blocking::ClientBuilder;
 
 // IPAPI ASN Lookup client
@@ -36,7 +37,10 @@ impl Asn for IPApi {
         let json: serde_json::Value = serde_json::from_str(&response_text).map_err(|_| {
             std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
-                format!("API returned non-JSON response: {}", response_text),
+                format_provider_error(
+                    "IPApi",
+                    &format!("API returned non-JSON response: {}", response_text),
+                ),
             )
         })?;
 
@@ -49,7 +53,7 @@ impl Asn for IPApi {
                     .unwrap_or("Unknown error");
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::Other,
-                    format!("API error: {}", message),
+                    format_provider_error("IPApi", &format!("API error: {}", message)),
                 ));
             }
         }

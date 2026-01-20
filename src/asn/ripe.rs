@@ -1,6 +1,6 @@
 // RIPE NCC ASN lookup implementation
 
-use crate::asn::client::map_reqwest_error;
+use crate::asn::client::{format_provider_error, map_reqwest_error};
 
 use super::client::*;
 use super::types::AsnInfo;
@@ -47,7 +47,7 @@ impl Asn for Ripe {
         let data = json_data.get("data").ok_or_else(|| {
             Error::new(
                 std::io::ErrorKind::InvalidData,
-                "Missing 'data' field in response",
+                format_provider_error("Ripe", "Missing 'data' field in API response"),
             )
         })?;
 
@@ -55,7 +55,7 @@ impl Asn for Ripe {
         let asns_array = data.get("asns").and_then(|v| v.as_array()).ok_or_else(|| {
             Error::new(
                 std::io::ErrorKind::InvalidData,
-                "Missing or invalid 'asns' field in response",
+                format_provider_error("Ripe", "Missing or invalid 'asns' field in API response"),
             )
         })?;
 
