@@ -1,6 +1,6 @@
 [package]
 name = "asn-fetcher"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["Manu Gupta"]
 description = "A CLI tool to fetch ASN (Autonomous System Number) information from IP addresses"
