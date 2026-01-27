@@ -59,32 +59,28 @@ impl Asn for Ripe {
             )
         })?;
 
-        let asns: Result<Vec<AsnInfo>, Error> = asns_array
+        let asns = asns_array
             .iter()
             .map(|asn_obj| {
                 let asn = asn_obj["asn"]
                     .as_u64()
                     .map(|n| n.to_string())
-                    .ok_or_else(|| {
-                        Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            "Missing or invalid 'asn' field in ASN object",
-                        )
-                    })?;
+                    .unwrap_or_else(|| {
+                        eprintln!("Warning: Missing or invalid 'asn' field in ASN object");
+                        "N/A".to_string()
+                    });
                 let holder = asn_obj["holder"]
                     .as_str()
-                    .ok_or_else(|| {
-                        Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            "Missing or invalid 'holder' field in ASN object",
-                        )
-                    })?
+                    .unwrap_or_else(|| {
+                        eprintln!("Warning: Missing or invalid 'holder' field in ASN object");
+                        "Unknown"
+                    })
                     .to_string();
-                Ok(AsnInfo { asn, holder })
+                AsnInfo { asn, holder }
             })
             .collect();
 
-        asns
+        Ok(asns)
     }
 }
 
@@ -112,34 +108,6 @@ mod tests {
         assert!(!ripe.server_url.is_empty());
     }
 
-    // Helper function to parse ASN array (same logic as in lookup_asn)
-    fn parse_asn_array(asns_array: &[serde_json::Value]) -> Result<Vec<AsnInfo>, Error> {
-        asns_array
-            .iter()
-            .map(|asn_obj| {
-                let asn = asn_obj["asn"]
-                    .as_u64()
-                    .map(|n| n.to_string())
-                    .ok_or_else(|| {
-                        Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            "Missing or invalid 'asn' field in ASN object",
-                        )
-                    })?;
-                let holder = asn_obj["holder"]
-                    .as_str()
-                    .ok_or_else(|| {
-                        Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            "Missing or invalid 'holder' field in ASN object",
-                        )
-                    })?
-                    .to_string();
-                Ok(AsnInfo { asn, holder })
-            })
-            .collect()
-    }
-
     #[test]
     fn test_parse_valid_response() {
         use serde_json::json;
@@ -156,10 +124,18 @@ mod tests {
         let data = json_data.get("data").unwrap();
         let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
 
-        let result = parse_asn_array(asns_array);
+        let asns: Vec<AsnInfo> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
 
-        assert!(result.is_ok());
-        let asns = result.unwrap();
         assert_eq!(asns.len(), 2);
         assert_eq!(asns[0].asn, "15169");
         assert_eq!(asns[0].holder, "Google LLC");
@@ -180,12 +156,22 @@ mod tests {
         let data = json_data.get("data").unwrap();
         let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
 
-        let result = parse_asn_array(asns_array);
+        let asns: Vec<AsnInfo> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
 
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
-        assert!(err.to_string().contains("asn"));
+        // Should not error, should use fallback
+        assert_eq!(asns.len(), 1);
+        assert_eq!(asns[0].asn, "N/A");
+        assert_eq!(asns[0].holder, "Google LLC");
     }
 
     #[test]
@@ -203,12 +189,22 @@ mod tests {
         let data = json_data.get("data").unwrap();
         let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
 
-        let result = parse_asn_array(asns_array);
+        let asns: Vec<AsnInfo> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
 
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
-        assert!(err.to_string().contains("holder"));
+        // Should not error, should use fallback
+        assert_eq!(asns.len(), 1);
+        assert_eq!(asns[0].asn, "15169");
+        assert_eq!(asns[0].holder, "Unknown");
     }
 
     #[test]
@@ -226,10 +222,21 @@ mod tests {
         let data = json_data.get("data").unwrap();
         let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
 
-        let result = parse_asn_array(asns_array);
+        let asns: Vec<AsnInfo> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
 
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
+        // Should not error, should use fallback
+        assert_eq!(asns.len(), 1);
+        assert_eq!(asns[0].asn, "N/A");
+        assert_eq!(asns[0].holder, "Google LLC");
     }
 }
