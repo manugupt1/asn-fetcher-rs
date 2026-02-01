@@ -34,6 +34,15 @@ impl Ripe {
             server_url: Self::DEFAULT_SERVER_URL.to_string(),
         })
     }
+
+    /// Creates a new RIPE client with a custom server URL (for testing)
+    #[cfg(test)]
+    fn new_with_url(server_url: String) -> Result<Self, reqwest::Error> {
+        let client = ClientBuilder::new()
+            .timeout(Duration::from_secs(Self::TIMEOUT_SECS))
+            .build()?;
+        Ok(Ripe { client, server_url })
+    }
 }
 
 impl Ripe {
@@ -104,6 +113,7 @@ impl Asn for Ripe {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::net::Ipv4Addr;
 
     #[test]
     fn test_ripe_new() {
@@ -126,19 +136,36 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_valid_response() {
+    fn test_lookup_asn_with_valid_response() {
+        use mockito::Server;
         use serde_json::json;
 
-        let json_data = json!({
-            "data": {
-                "asns": [
-                    {"asn": 15169, "holder": "Google LLC"},
-                    {"asn": 13335, "holder": "Cloudflare, Inc."}
-                ]
-            }
-        });
+        let mut server = Server::new();
+        let mock = server
+            .mock("GET", "/")
+            .match_query(mockito::Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                json!({
+                    "data": {
+                        "asns": [
+                            {"asn": 15169, "holder": "Google LLC"},
+                            {"asn": 13335, "holder": "Cloudflare, Inc."}
+                        ]
+                    }
+                })
+                .to_string(),
+            )
+            .create();
 
-        let asns = Ripe::parse_asn_response(&json_data).unwrap();
+        let ripe = Ripe::new_with_url(server.url()).unwrap();
+        let ip = IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8));
+        let result = ripe.lookup_asn(ip);
+
+        mock.assert();
+        assert!(result.is_ok());
+        let asns = result.unwrap();
         assert_eq!(asns.len(), 2);
         assert_eq!(asns[0].asn, "15169");
         assert_eq!(asns[0].holder, "Google LLC");
@@ -147,18 +174,35 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_missing_asn_field() {
+    fn test_lookup_asn_with_missing_asn_field() {
+        use mockito::Server;
         use serde_json::json;
 
-        let json_data = json!({
-            "data": {
-                "asns": [
-                    {"holder": "Google LLC"}  // Missing asn field
-                ]
-            }
-        });
+        let mut server = Server::new();
+        let mock = server
+            .mock("GET", "/")
+            .match_query(mockito::Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                json!({
+                    "data": {
+                        "asns": [
+                            {"holder": "Google LLC"}  // Missing asn field
+                        ]
+                    }
+                })
+                .to_string(),
+            )
+            .create();
 
-        let asns = Ripe::parse_asn_response(&json_data).unwrap();
+        let ripe = Ripe::new_with_url(server.url()).unwrap();
+        let ip = IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8));
+        let result = ripe.lookup_asn(ip);
+
+        mock.assert();
+        assert!(result.is_ok());
+        let asns = result.unwrap();
         assert_eq!(asns.len(), 1);
         assert_eq!(asns[0].asn, "N/A");
         assert_eq!(asns[0].holder, "Google LLC");
