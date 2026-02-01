@@ -65,8 +65,17 @@ impl Asn for Ripe {
                 let asn = asn_obj["asn"]
                     .as_u64()
                     .map(|n| n.to_string())
-                    .unwrap_or_else(|| "N/A".to_string());
-                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                    .unwrap_or_else(|| {
+                        eprintln!("Warning: Missing or invalid 'asn' field in ASN object");
+                        "N/A".to_string()
+                    });
+                let holder = asn_obj["holder"]
+                    .as_str()
+                    .unwrap_or_else(|| {
+                        eprintln!("Warning: Missing or invalid 'holder' field in ASN object");
+                        "Unknown"
+                    })
+                    .to_string();
                 AsnInfo { asn, holder }
             })
             .collect();
@@ -97,5 +106,137 @@ mod tests {
         // Verify the client was created successfully
         // We can't directly test the timeout, but we can ensure the struct is valid
         assert!(!ripe.server_url.is_empty());
+    }
+
+    #[test]
+    fn test_parse_valid_response() {
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"asn": 15169, "holder": "Google LLC"},
+                    {"asn": 13335, "holder": "Cloudflare, Inc."}
+                ]
+            }
+        });
+
+        let data = json_data.get("data").unwrap();
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
+
+        let asns: Vec<AsnInfo> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
+
+        assert_eq!(asns.len(), 2);
+        assert_eq!(asns[0].asn, "15169");
+        assert_eq!(asns[0].holder, "Google LLC");
+    }
+
+    #[test]
+    fn test_parse_missing_asn_field() {
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"holder": "Google LLC"}  // Missing asn field
+                ]
+            }
+        });
+
+        let data = json_data.get("data").unwrap();
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
+
+        let asns: Vec<AsnInfo> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
+
+        // Should not error, should use fallback
+        assert_eq!(asns.len(), 1);
+        assert_eq!(asns[0].asn, "N/A");
+        assert_eq!(asns[0].holder, "Google LLC");
+    }
+
+    #[test]
+    fn test_parse_missing_holder_field() {
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"asn": 15169}  // Missing holder field
+                ]
+            }
+        });
+
+        let data = json_data.get("data").unwrap();
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
+
+        let asns: Vec<AsnInfo> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
+
+        // Should not error, should use fallback
+        assert_eq!(asns.len(), 1);
+        assert_eq!(asns[0].asn, "15169");
+        assert_eq!(asns[0].holder, "Unknown");
+    }
+
+    #[test]
+    fn test_parse_invalid_asn_type() {
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"asn": "not-a-number", "holder": "Google LLC"}  // asn should be a number
+                ]
+            }
+        });
+
+        let data = json_data.get("data").unwrap();
+        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
+
+        let asns: Vec<AsnInfo> = asns_array
+            .iter()
+            .map(|asn_obj| {
+                let asn = asn_obj["asn"]
+                    .as_u64()
+                    .map(|n| n.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
+                AsnInfo { asn, holder }
+            })
+            .collect();
+
+        // Should not error, should use fallback
+        assert_eq!(asns.len(), 1);
+        assert_eq!(asns[0].asn, "N/A");
+        assert_eq!(asns[0].holder, "Google LLC");
     }
 }
