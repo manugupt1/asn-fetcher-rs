@@ -36,13 +36,20 @@ impl Ripe {
     }
 }
 
-impl Asn for Ripe {
-    fn lookup_asn(&self, ip: IpAddr) -> Result<Vec<AsnInfo>, Error> {
-        let url = format!("{}?resource={}", self.server_url, ip);
-        let response = self.client.get(&url).send().map_err(map_reqwest_error)?;
-
-        let json_data: serde_json::Value = response.json().map_err(map_reqwest_error)?;
-
+impl Ripe {
+    /// Parse ASN information from a JSON response
+    ///
+    /// This is a helper function that extracts ASN data from the RIPE API response format.
+    /// It handles missing or invalid fields gracefully by using fallback values.
+    ///
+    /// # Arguments
+    ///
+    /// * `json_data` - The JSON response from the RIPE API
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the 'data' or 'asns' fields are missing or invalid
+    fn parse_asn_response(json_data: &serde_json::Value) -> Result<Vec<AsnInfo>, Error> {
         // Check if 'data' field exists
         let data = json_data.get("data").ok_or_else(|| {
             Error::new(
@@ -84,6 +91,16 @@ impl Asn for Ripe {
     }
 }
 
+impl Asn for Ripe {
+    fn lookup_asn(&self, ip: IpAddr) -> Result<Vec<AsnInfo>, Error> {
+        let url = format!("{}?resource={}", self.server_url, ip);
+        let response = self.client.get(&url).send().map_err(map_reqwest_error)?;
+
+        let json_data: serde_json::Value = response.json().map_err(map_reqwest_error)?;
+        Self::parse_asn_response(&json_data)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -110,18 +127,18 @@ mod tests {
 
     #[test]
     fn test_parse_valid_response() {
-        // Construct AsnInfo instances directly to validate expected values
-        let asns: Vec<AsnInfo> = vec![
-            AsnInfo {
-                asn: "15169".to_string(),
-                holder: "Google LLC".to_string(),
-            },
-            AsnInfo {
-                asn: "13335".to_string(),
-                holder: "Cloudflare, Inc.".to_string(),
-            },
-        ];
+        use serde_json::json;
 
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"asn": 15169, "holder": "Google LLC"},
+                    {"asn": 13335, "holder": "Cloudflare, Inc."}
+                ]
+            }
+        });
+
+        let asns = Ripe::parse_asn_response(&json_data).unwrap();
         assert_eq!(asns.len(), 2);
         assert_eq!(asns[0].asn, "15169");
         assert_eq!(asns[0].holder, "Google LLC");
@@ -131,12 +148,17 @@ mod tests {
 
     #[test]
     fn test_parse_missing_asn_field() {
-        // Simulate behavior when the ASN field is missing by using the expected fallback
-        let asns: Vec<AsnInfo> = vec![AsnInfo {
-            asn: "N/A".to_string(),
-            holder: "Google LLC".to_string(),
-        }];
-        // Should not error, should use fallback
+        use serde_json::json;
+
+        let json_data = json!({
+            "data": {
+                "asns": [
+                    {"holder": "Google LLC"}  // Missing asn field
+                ]
+            }
+        });
+
+        let asns = Ripe::parse_asn_response(&json_data).unwrap();
         assert_eq!(asns.len(), 1);
         assert_eq!(asns[0].asn, "N/A");
         assert_eq!(asns[0].holder, "Google LLC");
@@ -154,22 +176,7 @@ mod tests {
             }
         });
 
-        let data = json_data.get("data").unwrap();
-        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
-
-        let asns: Vec<AsnInfo> = asns_array
-            .iter()
-            .map(|asn_obj| {
-                let asn = asn_obj["asn"]
-                    .as_u64()
-                    .map(|n| n.to_string())
-                    .unwrap_or_else(|| "N/A".to_string());
-                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
-                AsnInfo { asn, holder }
-            })
-            .collect();
-
-        // Should not error, should use fallback
+        let asns = Ripe::parse_asn_response(&json_data).unwrap();
         assert_eq!(asns.len(), 1);
         assert_eq!(asns[0].asn, "15169");
         assert_eq!(asns[0].holder, "Unknown");
@@ -187,22 +194,7 @@ mod tests {
             }
         });
 
-        let data = json_data.get("data").unwrap();
-        let asns_array = data.get("asns").and_then(|v| v.as_array()).unwrap();
-
-        let asns: Vec<AsnInfo> = asns_array
-            .iter()
-            .map(|asn_obj| {
-                let asn = asn_obj["asn"]
-                    .as_u64()
-                    .map(|n| n.to_string())
-                    .unwrap_or_else(|| "N/A".to_string());
-                let holder = asn_obj["holder"].as_str().unwrap_or("Unknown").to_string();
-                AsnInfo { asn, holder }
-            })
-            .collect();
-
-        // Should not error, should use fallback
+        let asns = Ripe::parse_asn_response(&json_data).unwrap();
         assert_eq!(asns.len(), 1);
         assert_eq!(asns[0].asn, "N/A");
         assert_eq!(asns[0].holder, "Google LLC");
