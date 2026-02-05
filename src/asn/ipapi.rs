@@ -30,6 +30,13 @@ impl Asn for IPApi {
 
         let response = self.client.get(&url).send().map_err(map_reqwest_error)?;
 
+        if !response.status().is_success() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("HTTP error: {}", response.status()),
+            ));
+        }
+
         let response_text = response.text().map_err(map_reqwest_error)?;
 
         // Parse JSON, providing helpful error message if API returns non-JSON (e.g., rate limit error)
